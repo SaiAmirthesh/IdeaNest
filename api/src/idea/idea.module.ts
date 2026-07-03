@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
-
-@Module({})
+import { IdeaController } from './idea.controller';
+import { IdeaService } from './idea.service';
+@Module({
+      controllers: [IdeaController],
+      providers: [IdeaService],
+})
 export class IdeaModule {}

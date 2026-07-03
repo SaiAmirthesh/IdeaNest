@@ -5,7 +5,8 @@
 // re-export the new tables here if needed (the export below is sufficient for
 // the default user/session/account/verification set).
 
-export * from "../auth-schema";
+export * from "./auth-schema";
+export * from "./idea-schema";
 
 // Add your own application tables below and export them here.
 // export * from "./ideas";

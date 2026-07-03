@@ -1,0 +1,8 @@
+export enum IdeaStatus {
+  SEED="SEED",
+  THINKING = "THINKING",
+  BUILDING = "BUILDING",
+  DORMANT = "DORMANT",
+  COMPLETED = "COMPLETED",
+  ARCHEIVED = "ARCHEIVED"
+}
