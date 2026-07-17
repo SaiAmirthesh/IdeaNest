@@ -12,7 +12,6 @@ import { Body,
   import type { Request } from "express";
 
 import { auth } from "../auth/auth";
-
 import { IdeaService } from './idea.service';
 import { IdeaResponseDto } from './dto/idea-response.dto';
 import { IdeaMapper } from './mapper/idea.mapper';

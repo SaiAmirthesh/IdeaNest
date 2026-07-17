@@ -1,0 +1,20 @@
+{
+  "framework": "vite-react",
+  "devServer": {
+    "command": "npm run dev",
+    "cwd": "web",
+    "port": 5173
+  },
+  "files": [
+    "web/index.html"
+  ],
+  "insertBefore": "</head>",
+  "commentSyntax": {
+    "start": "<!-- impeccable:live:start -->",
+    "end": "<!-- impeccable:live:end -->"
+  },
+  "overlay": {
+    "port": 8400
+  },
+  "cspChecked": true
+}
