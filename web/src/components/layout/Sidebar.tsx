@@ -10,7 +10,7 @@ export default function Sidebar() {
   const dispatch = useDispatch();
   // Using selector to support auth state if present, falling back to mock user
   const authUser = useSelector((state: RootState) => state.auth.user);
-  
+
   const user = authUser || {
     name: "Sai Amirthesh",
     email: "sai@ideanest.io",
@@ -51,10 +51,9 @@ export default function Sidebar() {
               to={item.path}
               end={item.path === "/app"}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-none text-sm font-medium transition-all duration-200 group relative ${
-                  isActive
-                    ? "bg-[#111111] text-[#F5F5F5] border-l-2 border-accent-gold"
-                    : "text-[#737373] hover:text-[#F5F5F5] hover:bg-[#111111]/50 border-l-2 border-transparent"
+                `flex items-center gap-3 px-3 py-2 rounded-none text-sm font-medium transition-all duration-200 group relative ${isActive
+                  ? "bg-[#111111] text-[#F5F5F5] border-l-2 border-accent-gold"
+                  : "text-[#737373] hover:text-[#F5F5F5] hover:bg-[#111111]/50 border-l-2 border-transparent"
                 }`
               }
             >
@@ -81,7 +80,7 @@ export default function Sidebar() {
               <span className="text-[10px] text-[#737373] truncate">{user.email}</span>
             </div>
           </div>
-          <button 
+          <button
             onClick={handleLogout}
             className="size-7 rounded-none text-[#737373] hover:text-red-400 hover:bg-red-500/10 flex items-center justify-center transition-colors"
             title="Log Out"

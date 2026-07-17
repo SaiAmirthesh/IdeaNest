@@ -43,8 +43,21 @@ export class AuthController {
 
     res.status(webResponse.status);
     webResponse.headers.forEach((value, key) => {
+      if (key.toLowerCase() === "set-cookie") return;
       res.setHeader(key, value);
     });
+
+    if (typeof webResponse.headers.getSetCookie === "function") {
+      const cookies = webResponse.headers.getSetCookie();
+      if (cookies.length > 0) {
+        res.setHeader("set-cookie", cookies);
+      }
+    } else {
+      const cookie = webResponse.headers.get("set-cookie");
+      if (cookie) {
+        res.setHeader("set-cookie", cookie);
+      }
+    }
 
     const body = await webResponse.text();
     // Forward the original body verbatim (including error details) so the

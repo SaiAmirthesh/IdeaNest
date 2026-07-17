@@ -23,8 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth";
-import LineWaves from "@/components/ui/LineWaves";
-import logoImg from "@/assets/IdeaNest-logo.png";
+import PixelSnow from "@/components/ui/PixelSnow";
 
 export default function Landing() {
   const { data: session } = useSession();
@@ -82,20 +81,12 @@ export default function Landing() {
       <header className="relative z-50 max-w-7xl mx-auto px-6 h-20 flex items-center justify-between border-b border-[#262626]/20">
         {/* Left Side: Brand Logo */}
         <div className="flex items-center gap-3">
-          <img src={logoImg} alt="IdeaNest Logo" className="h-20 w-auto object-contain" />
-          <span className="text-md font-semibold tracking-wider bg-gradient-to-r from-[#F5F5F5] to-[#737373] bg-clip-text text-transparent font-mono">
+          <span className="text-xl font-semibold tracking-wider bg-gradient-to-r from-[#F5F5F5] to-[#737373] bg-clip-text text-accent-gold font-mono">
             IdeaNest
           </span>
         </div>
 
-        {/* Center Pill Menu Bar */}
-        <div className="hidden lg:flex items-center gap-1.5 p-1 bg-[#0A0A0A] border border-[#262626] rounded-none text-xs text-[#737373] shadow-lg">
-          <a href="#features" className="px-3.5 py-1.5 rounded-none hover:text-[#F5F5F5] transition-colors font-medium">Features</a>
-          <a href="#lifecycle" className="px-3.5 py-1.5 rounded-none hover:text-[#F5F5F5] transition-colors font-medium">Lifecycle</a>
-          <a href="#roadmap" className="px-3.5 py-1.5 rounded-none hover:text-[#F5F5F5] transition-colors font-medium">Roadmap</a>
-          <a href="#about" className="px-3.5 py-1.5 rounded-none hover:text-[#F5F5F5] transition-colors font-medium">About</a>
-        </div>
-
+      
         {/* Right Side: Action buttons */}
         <div className="flex items-center gap-3">
           {session ? (
@@ -107,7 +98,7 @@ export default function Landing() {
               <Link to="/login" className="text-xs font-semibold text-[#A3A3A3] hover:text-[#F5F5F5] transition-colors px-3 py-2">
                 Sign In
               </Link>
-              <Link to="/login" className="text-xs font-semibold text-[#030303] bg-[#F5F5F5] hover:bg-[#EAEAEA] transition-all px-4 py-2 rounded-none">
+              <Link to="/login" className="text-xs font-semibold text-[#030303] bg-accent-gold hover:bg-[#DBC182] transition-all px-4 py-2 rounded-none shadow-md shadow-accent-gold/10">
                 Get Started
               </Link>
             </>
@@ -118,19 +109,18 @@ export default function Landing() {
       {/* HERO SECTION */}
       <section id="hero" className="relative z-10 w-full pt-12 pb-24 overflow-hidden min-h-[80vh] flex items-center">
         {/* WebGL LineWaves Localized Hero Background - Full Width */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-80">
-          <LineWaves
-            speed={0.12}
-            innerLineCount={44}
-            outerLineCount={28}
-            warpIntensity={0.8}
-            rotation={-30}
+        {/* WebGL PixelSnow Background - Full Width */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-60">
+          <PixelSnow 
+            color="#C9A961"
+            flakeSize={0.015}
+            minFlakeSize={1.25}
+            pixelResolution={200}
+            speed={1.25}
+            density={0.3}
+            direction={125}
             brightness={1}
-            color1="#060606"
-            color2="#1c1c1c"
-            color3="#C9A961"
-            enableMouseInteraction={true}
-            mouseInfluence={5.0}
+            farPlane={25}
           />
         </div>
 
@@ -154,7 +144,7 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#F5F5F5] leading-[1.1] max-w-4xl"
             >
-              Capture Every Idea Before It's Gone.
+              Capture Every <span className="text-accent-gold">Idea</span> Before It's Gone.
             </motion.h1>
 
             <motion.p
@@ -174,19 +164,19 @@ export default function Landing() {
             >
               {session ? (
                 <Link to="/app">
-                  <Button size="lg" className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold h-11 px-6 rounded-none shadow-xl shadow-white/5 cursor-pointer text-xs">
+                  <Button size="lg" className="bg-accent-gold hover:bg-[#DBC182] text-[#030303] font-semibold h-11 px-6 rounded-none shadow-xl shadow-accent-gold/10 cursor-pointer text-xs">
                     <span>Go to Dashboard</span>
                   </Button>
                 </Link>
               ) : (
                 <>
                   <Link to="/login">
-                    <Button size="lg" className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold h-11 px-6 rounded-none shadow-xl shadow-white/5 cursor-pointer text-xs">
+                    <Button size="lg" className="bg-accent-gold hover:bg-[#DBC182] text-[#030303] font-semibold h-11 px-6 rounded-none shadow-xl shadow-accent-gold/10 cursor-pointer text-xs">
                       <span>Get Started</span>
                     </Button>
                   </Link>
                   <Link to="/login">
-                    <Button size="lg" variant="outline" className="border-[#2A2A2A] bg-transparent hover:bg-[#111111] text-[#F5F5F5] h-11 px-6 rounded-none cursor-pointer text-xs">
+                    <Button size="lg" variant="outline" className="border-accent-gold/30 bg-transparent hover:bg-accent-gold/5 text-accent-gold h-11 px-6 rounded-none cursor-pointer text-xs">
                       <span>Sign In</span>
                     </Button>
                   </Link>
@@ -198,12 +188,12 @@ export default function Landing() {
       </section>
 
       {/* SECTION 2: WHY IDEANEST */}
-      <section id="about" className="relative z-10 max-w-7xl mx-auto px-6 py-28 border-t border-[#262626]/20">
+      <section id="about" className="relative z-10 max-w-7xl mx-auto px-6 py-28 border-t border-[#262626]/20 bg-[#111111]/10 rounded-none">
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <span className="text-[10px] uppercase font-mono tracking-wider text-[#A3A3A3] block border-l-2 border-neutral-400 pl-2 w-fit mx-auto">
+          <span className="text-[10px] uppercase font-mono tracking-wider text-[#A3A3A3] block border-l-2 border-accent-gold pl-2 w-fit mx-auto">
             Why IdeaNest
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-[#F5F5F5]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-accent-gold">
             Your Ideas Deserve More Than Sticky Notes
           </h2>
           <div className="space-y-4 text-sm sm:text-base text-[#A3A3A3] font-light leading-relaxed max-w-2xl mx-auto text-left sm:text-center">
@@ -223,7 +213,7 @@ export default function Landing() {
           <span className="text-[10px] uppercase font-mono tracking-wider text-[#A3A3A3] block border-l-2 border-accent-gold pl-2 w-fit mx-auto">
             Workflow stages
           </span>
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F5F5F5]">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-accent-gold">
             Idea Lifecycle
           </h2>
           <p className="text-xs sm:text-sm text-[#A3A3A3] font-light max-w-xl mx-auto leading-relaxed">
@@ -293,10 +283,10 @@ export default function Landing() {
       {/* SECTION 4: FEATURES SECTION */}
       <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-28 border-t border-[#262626]/20 space-y-16">
         <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span className="text-[10px] uppercase font-mono tracking-wider text-[#A3A3A3] block border-l-2 border-neutral-400 pl-2 w-fit mx-auto">
+          <span className="text-[10px] uppercase font-mono tracking-wider text-[#A3A3A3] block border-l-2 border-accent-gold pl-2 w-fit mx-auto">
             Application features
           </span>
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F5F5F5]">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-accent-gold">
             Everything Your Ideas Need
           </h2>
           <p className="text-xs text-[#A3A3A3] font-light max-w-md mx-auto leading-relaxed">
@@ -308,48 +298,48 @@ export default function Landing() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-6 hover:border-neutral-700 transition-all group">
-            <Sparkles className="size-6 text-[#A3A3A3] mb-4 group-hover:text-[#F5F5F5] transition-colors" />
-            <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Capture Ideas</h3>
+            <Sparkles className="size-6 text-[#A3A3A3] mb-4 group-hover:text-accent-gold transition-colors" />
+            <h3 className="text-sm font-semibold text-accent-gold mb-2">Capture Ideas</h3>
             <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
               Quickly save thoughts before they're forgotten.
             </p>
           </div>
           {/* Card 2 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-6 hover:border-neutral-700 transition-all group">
-            <FolderTree className="size-6 text-[#A3A3A3] mb-4 group-hover:text-[#F5F5F5] transition-colors" />
-            <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Organize Everything</h3>
+            <FolderTree className="size-6 text-[#A3A3A3] mb-4 group-hover:text-accent-gold transition-colors" />
+            <h3 className="text-sm font-semibold text-accent-gold mb-2">Organize Everything</h3>
             <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
               Keep ideas neatly categorized with notes, tags, and folders.
             </p>
           </div>
           {/* Card 3 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-6 hover:border-neutral-700 transition-all group">
-            <Layers3 className="size-6 text-[#A3A3A3] mb-4 group-hover:text-[#F5F5F5] transition-colors" />
-            <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Track Progress</h3>
+            <Layers3 className="size-6 text-[#A3A3A3] mb-4 group-hover:text-accent-gold transition-colors" />
+            <h3 className="text-sm font-semibold text-accent-gold mb-2">Track Progress</h3>
             <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
               Watch ideas evolve from inspiration to execution.
             </p>
           </div>
           {/* Card 4 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-6 hover:border-neutral-700 transition-all group">
-            <Notebook className="size-6 text-[#A3A3A3] mb-4 group-hover:text-[#F5F5F5] transition-colors" />
-            <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Rich Notes</h3>
+            <Notebook className="size-6 text-[#A3A3A3] mb-4 group-hover:text-accent-gold transition-colors" />
+            <h3 className="text-sm font-semibold text-accent-gold mb-2">Rich Notes</h3>
             <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
               Expand every idea with detailed notes and research.
             </p>
           </div>
           {/* Card 5 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-6 hover:border-neutral-700 transition-all group">
-            <Search className="size-6 text-[#A3A3A3] mb-4 group-hover:text-[#F5F5F5] transition-colors" />
-            <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Search Instantly</h3>
+            <Search className="size-6 text-[#A3A3A3] mb-4 group-hover:text-accent-gold transition-colors" />
+            <h3 className="text-sm font-semibold text-accent-gold mb-2">Search Instantly</h3>
             <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
               Find ideas in seconds using powerful search and filters.
             </p>
           </div>
           {/* Card 6 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-6 hover:border-neutral-700 transition-all group">
-            <ShieldCheck className="size-6 text-[#A3A3A3] mb-4 group-hover:text-[#F5F5F5] transition-colors" />
-            <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Secure Sync</h3>
+            <ShieldCheck className="size-6 text-[#A3A3A3] mb-4 group-hover:text-accent-gold transition-colors" />
+            <h3 className="text-sm font-semibold text-accent-gold mb-2">Secure Sync</h3>
             <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
               Your ideas stay private and securely stored in the cloud.
             </p>
@@ -393,10 +383,10 @@ export default function Landing() {
       {/* SECTION 5: HOW IT WORKS */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-28 border-t border-[#262626]/20 space-y-16">
         <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span className="text-[10px] uppercase font-mono tracking-wider text-[#A3A3A3] block border-l-2 border-neutral-400 pl-2 w-fit mx-auto">
+          <span className="text-[10px] uppercase font-mono tracking-wider text-[#A3A3A3] block border-l-2 border-accent-gold pl-2 w-fit mx-auto">
             Process flow
           </span>
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#F5F5F5]">How It Works</h2>
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-accent-gold">How It Works</h2>
         </div>
 
         {/* 3 Simple Cards with connecting layout */}
@@ -404,10 +394,10 @@ export default function Landing() {
           {/* Step 1 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-8 relative flex flex-col justify-between min-h-[220px]">
             <div>
-              <div className="size-8 rounded-none bg-[#111111] border border-[#2A2A2A] flex items-center justify-center text-xs font-bold text-[#F5F5F5] font-mono mb-4">
+              <div className="size-8 rounded-none bg-[#111111] border border-[#2A2A2A] flex items-center justify-center text-xs font-bold text-accent-gold font-mono mb-4">
                 1
               </div>
-              <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Capture</h3>
+              <h3 className="text-sm font-semibold text-accent-gold mb-2">Capture</h3>
               <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
                 Save an idea the moment inspiration strikes.
               </p>
@@ -417,10 +407,10 @@ export default function Landing() {
           {/* Step 2 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-8 relative flex flex-col justify-between min-h-[220px]">
             <div>
-              <div className="size-8 rounded-none bg-[#111111] border border-[#2A2A2A] flex items-center justify-center text-xs font-bold text-[#F5F5F5] font-mono mb-4">
+              <div className="size-8 rounded-none bg-[#111111] border border-[#2A2A2A] flex items-center justify-center text-xs font-bold text-accent-gold font-mono mb-4">
                 2
               </div>
-              <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Develop</h3>
+              <h3 className="text-sm font-semibold text-accent-gold mb-2">Develop</h3>
               <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
                 Add notes, organize thoughts, and refine your concept.
               </p>
@@ -430,10 +420,10 @@ export default function Landing() {
           {/* Step 3 */}
           <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-none p-8 relative flex flex-col justify-between min-h-[220px]">
             <div>
-              <div className="size-8 rounded-none bg-[#111111] border border-[#2A2A2A] flex items-center justify-center text-xs font-bold text-[#F5F5F5] font-mono mb-4">
+              <div className="size-8 rounded-none bg-[#111111] border border-[#2A2A2A] flex items-center justify-center text-xs font-bold text-accent-gold font-mono mb-4">
                 3
               </div>
-              <h3 className="text-sm font-semibold text-[#F5F5F5] mb-2">Build</h3>
+              <h3 className="text-sm font-semibold text-accent-gold mb-2">Build</h3>
               <p className="text-xs text-[#A3A3A3] font-light leading-relaxed">
                 Track progress until your idea becomes reality.
               </p>
@@ -450,7 +440,7 @@ export default function Landing() {
           {/* Faint ambient light glow */}
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-white/5 rounded-full blur-[80px]" />
 
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#F5F5F5] relative z-10">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-accent-gold relative z-10">
             Ready to Build Your Second Brain?
           </h2>
           <p className="text-xs sm:text-sm text-[#A3A3A3] font-light max-w-md mx-auto leading-relaxed relative z-10">
@@ -459,13 +449,13 @@ export default function Landing() {
           <div className="pt-2 relative z-10">
             {session ? (
               <Link to="/app">
-                <Button size="lg" className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold h-11 px-8 rounded-none shadow-xl shadow-white/5 cursor-pointer text-xs">
+                <Button size="lg" className="bg-accent-gold hover:bg-[#DBC182] text-[#030303] font-semibold h-11 px-8 rounded-none shadow-xl shadow-accent-gold/10 cursor-pointer text-xs">
                   <span>Go to Dashboard</span>
                 </Button>
               </Link>
             ) : (
               <Link to="/login">
-                <Button size="lg" className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold h-11 px-8 rounded-none shadow-xl shadow-white/5 cursor-pointer text-xs">
+                <Button size="lg" className="bg-accent-gold hover:bg-[#DBC182] text-[#030303] font-semibold h-11 px-8 rounded-none shadow-xl shadow-accent-gold/10 cursor-pointer text-xs">
                   <span>Get Started</span>
                 </Button>
               </Link>

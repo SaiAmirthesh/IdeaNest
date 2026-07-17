@@ -12,7 +12,7 @@ import { authClient, useSession } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logoImg from "@/assets/IdeaNest-logo.png";
-import heroImg from "@/assets/hero.png";
+import landingImg from "@/assets/landing.png";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -28,16 +28,8 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const { data: session } = useSession();
 
-  // Dynamic asset loading with fallback using path strings to prevent Vite build errors
-  const [landingImage, setLandingImage] = useState<string>("/src/assets/landing.png");
- 
-  const handleImageError = () => {
-    if (landingImage === "/src/assets/landing.png") {
-      setLandingImage("/src/assets/landing.jpeg");
-    } else if (landingImage === "/src/assets/landing.jpeg") {
-      setLandingImage(heroImg);
-    }
-  };
+  // Direct asset loading using Vite bundled asset
+  const [landingImage] = useState<string>(landingImg);
 
   // Redirect if session already exists
   useEffect(() => {
@@ -81,7 +73,6 @@ export default function Login() {
           email: values.email,
           password: values.password,
           name: values.name,
-          callbackURL: "/app",
         });
 
         if (res?.error) {
@@ -90,12 +81,11 @@ export default function Login() {
         }
 
         toast.success("Account created successfully!");
-        navigate("/app");
+        window.location.href = "/app";
       } else {
         const res = await authClient.signIn.email({
           email: values.email,
           password: values.password,
-          callbackURL: "/app",
         });
 
         if (res?.error) {
@@ -104,7 +94,7 @@ export default function Login() {
         }
 
         toast.success("Welcome back!");
-        navigate("/app");
+        window.location.href = "/app";
       }
     } catch (error) {
       toast.error("An unexpected error occurred. Please try again.");
@@ -149,7 +139,7 @@ export default function Login() {
             <Link to="/" className="flex flex-col items-center gap-2 mb-3">
               <img src={logoImg} alt="IdeaNest Logo" className="h-32 w-auto object-contain" />
             </Link>
-            <h2 className="text-xl font-bold text-[#F5F5F5] tracking-tight">
+            <h2 className="text-xl font-bold text-accent-gold tracking-tight">
               {isSignUp ? "Create your brain index" : "Access your Second Brain"}
             </h2>
             <p className="text-xs text-[#737373] mt-1.5 leading-relaxed">
@@ -222,7 +212,7 @@ export default function Login() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold h-11 rounded-none mt-6 cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-white/5 border border-transparent transition-all"
+              className="w-full bg-accent-gold hover:bg-[#DBC182] text-[#030303] font-semibold h-11 rounded-none mt-6 cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-accent-gold/10 border border-transparent transition-all"
             >
               <span>{isSubmitting ? "Authenticating..." : isSignUp ? "Create Account" : "Continue"}</span>
               <ArrowRight className="size-4" />
@@ -244,7 +234,7 @@ export default function Login() {
             type="button"
             onClick={handleGoogleLogin}
             variant="outline"
-            className="w-full border-[#262626] bg-[#111111]/50 hover:bg-[#111111] text-[#F5F5F5] h-11 rounded-none flex items-center justify-center gap-2 cursor-pointer transition-colors"
+            className="w-full border-accent-gold/20 bg-[#111111]/50 hover:bg-accent-gold/5 hover:border-accent-gold/40 text-accent-gold h-11 rounded-none flex items-center justify-center gap-2 cursor-pointer transition-colors"
           >
             <svg className="size-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -274,7 +264,7 @@ export default function Login() {
             </span>
             <button
               onClick={toggleAuthMode}
-              className="text-[#F5F5F5] font-semibold hover:underline cursor-pointer focus:outline-none"
+              className="text-accent-gold font-semibold hover:underline cursor-pointer focus:outline-none"
             >
               {isSignUp ? "Sign In" : "Create Account"}
             </button>
@@ -297,7 +287,6 @@ export default function Login() {
             animate={{ opacity: 0.85, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             src={landingImage}
-            onError={handleImageError}
             alt="IdeaNest Platform Overview"
             className="absolute inset-0 size-full object-cover z-0"
           />
@@ -323,7 +312,7 @@ export default function Login() {
               IdeaNest Vault
             </span>
           </div>
-          <p className="text-[#F5F5F5] font-semibold text-lg leading-snug mb-3">
+          <p className="text-accent-gold font-semibold text-lg leading-snug mb-3">
             "Your second brain, beautifully secured and structure-refined."
           </p>
           <p className="text-xs text-[#737373] leading-relaxed">
