@@ -9,7 +9,10 @@ let cachedServer: Express;
 async function bootstrapServer(): Promise<Express> {
   if (!cachedServer) {
     const expressApp = express();
-    const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
+    const app = await NestFactory.create(
+      AppModule,
+      new ExpressAdapter(expressApp),
+    );
 
     const allowedOrigins = [
       'http://localhost:5173',
@@ -39,7 +42,10 @@ if (!process.env.VERCEL) {
 }
 
 // Export default serverless handler for Vercel
-export default async function handler(req: Request, res: Response) {
+export default async function handler(
+  req: Request,
+  res: Response,
+): Promise<void> {
   const server = await bootstrapServer();
-  return server(req, res);
+  server(req, res);
 }
