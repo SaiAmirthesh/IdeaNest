@@ -1,19 +1,18 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Search, Plus, FileText } from "lucide-react";
 import { useGetNotesQuery, useDeleteNoteMutation } from "@/features/notes/noteApi";
 import { useGetIdeasQuery } from "@/features/ideas/ideaApi";
-import type { Note } from "@/features/notes/types";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { CreateNoteDialog } from "@/components/notes/CreateNoteDialog";
-import { NoteEditorModal } from "@/components/notes/NoteEditorModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function Notes() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIdeaIdFilter, setSelectedIdeaIdFilter] = useState<string>("ALL");
-  const [editingNote, setEditingNote] = useState<Note | null>(null);
 
   const { data: notesData, isLoading: isLoadingNotes } = useGetNotesQuery({ limit: 100 });
   const { data: ideasData } = useGetIdeasQuery({ limit: 100 });
@@ -190,20 +189,13 @@ export default function Notes() {
                 key={note.id}
                 note={note}
                 idea={parentIdea}
-                onEdit={(n) => setEditingNote(n)}
+                onEdit={(n) => navigate(`/app/notes/${n.id}`)}
                 onDelete={handleDeleteNote}
               />
             );
           })}
         </div>
       )}
-
-      {/* Edit Note Modal */}
-      <NoteEditorModal
-        note={editingNote}
-        open={!!editingNote}
-        onClose={() => setEditingNote(null)}
-      />
     </div>
   );
 }

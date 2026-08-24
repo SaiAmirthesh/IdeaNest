@@ -10,6 +10,7 @@ import Dashboard from "@/pages/dashboard/Dashboard";
 import Ideas from "@/pages/dashboard/Ideas";
 import IdeaDetails from "@/pages/dashboard/IdeaDetails";
 import Notes from "@/pages/dashboard/Notes";
+import NoteDocumentPage from "@/pages/dashboard/NoteDocumentPage";
 import GlobalGraph from "@/pages/dashboard/GlobalGraph";
 import Settings from "@/pages/dashboard/Settings";
 
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
           {
             path: "notes",
             element: <Notes />,
+          },
+          {
+            path: "notes/:id",
+            element: <NoteDocumentPage />,
           },
           {
             path: "graph",
