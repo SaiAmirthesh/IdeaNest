@@ -77,7 +77,7 @@ export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
       });
       setOpen(false);
       reset();
-    } catch (error) {
+    } catch {
       toast.error("Failed to save idea. Please check your connection.");
     }
   };

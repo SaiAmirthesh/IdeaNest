@@ -207,7 +207,7 @@ export default function PixelSnow({
   const isVisibleRef = useRef<boolean>(true);
   const rendererRef = useRef<WebGLRenderer | null>(null);
   const materialRef = useRef<ShaderMaterial | null>(null);
-  const resizeTimeoutRef = useRef<any>(null);
+  const resizeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Memoize shader variant value
   const variantValue = useMemo(() => {

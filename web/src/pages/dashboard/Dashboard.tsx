@@ -1,8 +1,11 @@
+import { useMemo } from "react";
 import { Link } from "react-router";
 import { formatDistanceToNow } from "date-fns";
-import { Brain, ArrowRight, Lightbulb, TrendingUp, Sparkles, Plus } from "lucide-react";
+import { Network, ArrowRight, Lightbulb, TrendingUp, Sparkles, Plus } from "lucide-react";
 import { useGetIdeasQuery } from "@/features/ideas/ideaApi";
 import { useGetNotesQuery } from "@/features/notes/noteApi";
+import { buildGlobalVaultGraph } from "@/features/graph/graphUtils";
+import { KnowledgeGraph } from "@/components/graph/KnowledgeGraph";
 import { IdeaStatusBadge } from "@/components/ideas/IdeaStatusBadge";
 import { CreateIdeaDialog } from "@/components/ideas/CreateIdeaDialog";
 import { Button } from "@/components/ui/button";
@@ -11,8 +14,8 @@ export default function Dashboard() {
   const { data: ideasData, isLoading: isLoadingIdeas } = useGetIdeasQuery({ limit: 100 });
   const { data: notesData } = useGetNotesQuery({ limit: 100 });
 
-  const ideas = ideasData?.data || [];
-  const notes = notesData?.data || [];
+  const ideas = useMemo(() => ideasData?.data || [], [ideasData]);
+  const notes = useMemo(() => notesData?.data || [], [notesData]);
 
   // Derive stats
   const totalCount = ideas.length;
@@ -22,6 +25,11 @@ export default function Dashboard() {
   const dormantCount = ideas.filter((i) => i.status === "DORMANT").length;
   const seedCount = ideas.filter((i) => i.status === "SEED").length;
   const thinkingCount = ideas.filter((i) => i.status === "THINKING").length;
+
+  // Build live global vault graph
+  const vaultGraphData = useMemo(() => {
+    return buildGlobalVaultGraph(ideas, notes);
+  }, [ideas, notes]);
 
   // Recent ideas: take top 4
   const recentIdeas = [...ideas]
@@ -204,40 +212,38 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Brain Connections / Notes Density */}
-        <div className="bg-[#0A0A0A] border border-[#262626] rounded-none p-6 flex flex-col justify-between h-64 relative overflow-hidden group hover:bg-[#111111] hover:border-[#525252] transition-all">
-          <div className="flex items-center gap-1.5">
-            <Brain className="size-4 text-neutral-400" />
-            <span className="text-xs font-semibold text-[#F5F5F5]">Knowledge Synapses</span>
-          </div>
-
-          {/* Minimal network graphic representation */}
-          <div className="h-28 w-full relative flex items-center justify-center">
-            <div className="absolute size-20 rounded-none border border-dashed border-[#262626] animate-[spin_20s_linear_infinite]" />
-            <div className="absolute size-28 rounded-none border border-dashed border-[#262626]/60 animate-[spin_40s_linear_infinite_reverse]" />
-
-            {/* Center Node */}
-            <div className="size-5 rounded-none bg-[#111111] border border-neutral-500 flex items-center justify-center shadow-lg shadow-white/2 z-10">
-              <span className="size-1.5 rounded-none bg-neutral-400 animate-pulse" />
+        {/* Live Vault Knowledge Graph Preview */}
+        <div className="bg-[#0A0A0A] border border-[#262626] rounded-none p-5 flex flex-col justify-between h-64 relative overflow-hidden group hover:border-[#525252] transition-all">
+          <div className="flex items-center justify-between z-10">
+            <div className="flex items-center gap-1.5">
+              <Network className="size-4 text-accent-gold" />
+              <span className="text-xs font-semibold text-[#F5F5F5]">Vault Synaptic Graph</span>
             </div>
-
-            {/* Satellite Nodes */}
-            <div className="absolute top-4 left-12 size-3 rounded-none bg-[#111111] border border-neutral-700 flex items-center justify-center">
-              <span className="size-1 rounded-none bg-neutral-600" />
-            </div>
-            <div className="absolute bottom-6 right-16 size-3.5 rounded-none bg-[#111111] border border-accent-gold-dim flex items-center justify-center">
-              <span className="size-1 rounded-none bg-accent-gold" />
-            </div>
-            <div className="absolute top-12 right-12 size-2.5 rounded-none bg-[#111111] border border-neutral-700 flex items-center justify-center">
-              <span className="size-1 rounded-none bg-neutral-600" />
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center text-[10px] text-[#737373] border-t border-[#262626]/60 pt-3">
-            <span>Notes Attached: {totalNotesCount}</span>
-            <Link to="/app/notes" className="text-accent-gold hover:underline font-mono">
-              View Notes →
+            <Link
+              to="/app/graph"
+              className="text-[10px] font-mono text-accent-gold hover:underline flex items-center gap-1"
+            >
+              <span>Explore Full</span>
+              <ArrowRight className="size-3" />
             </Link>
+          </div>
+
+          {/* Interactive Graph Canvas Preview */}
+          <div className="h-32 w-full my-1 border border-[#262626]/50 bg-[#070707] relative overflow-hidden">
+            <KnowledgeGraph
+              data={vaultGraphData}
+              height="100%"
+              showControls={false}
+            />
+          </div>
+
+          <div className="flex justify-between items-center text-[10px] text-[#737373] border-t border-[#262626]/60 pt-2 z-10">
+            <span>
+              {vaultGraphData.nodes.length} Nodes • {vaultGraphData.links.length} Links
+            </span>
+            <span className="font-mono text-accent-gold">
+              {vaultGraphData.tags.length} Tag Clusters
+            </span>
           </div>
         </div>
       </div>

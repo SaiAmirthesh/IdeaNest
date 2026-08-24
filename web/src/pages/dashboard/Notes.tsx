@@ -43,7 +43,7 @@ export default function Notes() {
     try {
       await deleteNote(id).unwrap();
       toast.success("Note deleted");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete note");
     }
   };

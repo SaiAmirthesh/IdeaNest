@@ -63,7 +63,7 @@ export function CreateNoteDialog({ trigger, defaultIdeaId, onSuccess }: CreateNo
       reset({ title: "", content: "", ideaId: defaultIdeaId || "" });
       setOpen(false);
       onSuccess?.();
-    } catch (error) {
+    } catch {
       toast.error("Failed to capture note");
     }
   };

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { LayoutDashboard, Lightbulb, FileText, Settings, User, LogOut } from "lucide-react";
+import { LayoutDashboard, Lightbulb, FileText, Network, Settings, User, LogOut } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/app/store";
 import { logout } from "@/features/auth/authSlice";
@@ -8,7 +8,6 @@ import logoImg from "@/assets/IdeaNest-logo.png";
 
 export default function Sidebar() {
   const dispatch = useDispatch();
-  // Using selector to support auth state if present, falling back to mock user
   const authUser = useSelector((state: RootState) => state.auth.user);
 
   const user = authUser || {
@@ -21,6 +20,7 @@ export default function Sidebar() {
     { name: "Overview", path: "/app", icon: LayoutDashboard },
     { name: "Ideas", path: "/app/ideas", icon: Lightbulb },
     { name: "Notes", path: "/app/notes", icon: FileText },
+    { name: "Vault Graph", path: "/app/graph", icon: Network },
     { name: "Settings", path: "/app/settings", icon: Settings },
   ];
 

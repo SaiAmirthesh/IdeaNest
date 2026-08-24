@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router";
 import { toast } from "sonner";
 import {
@@ -8,6 +8,8 @@ import {
   Plus,
   FileText,
   Save,
+  Network,
+  LayoutGrid,
 } from "lucide-react";
 import {
   useGetIdeaQuery,
@@ -15,98 +17,73 @@ import {
   useDeleteIdeaMutation,
 } from "@/features/ideas/ideaApi";
 import { useGetNotesQuery, useDeleteNoteMutation } from "@/features/notes/noteApi";
-import type { IdeaStatus } from "@/features/ideas/types";
+import { buildLocalIdeaGraph } from "@/features/graph/graphUtils";
+import type { Idea, IdeaStatus } from "@/features/ideas/types";
 import type { Note } from "@/features/notes/types";
 import { IdeaStatusBadge } from "@/components/ideas/IdeaStatusBadge";
 import { NoteCard } from "@/components/notes/NoteCard";
 import { CreateNoteDialog } from "@/components/notes/CreateNoteDialog";
 import { NoteEditorModal } from "@/components/notes/NoteEditorModal";
+import { KnowledgeGraph } from "@/components/graph/KnowledgeGraph";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function IdeaDetails() {
-  const { id } = useParams<{ id: string }>();
+interface IdeaDetailsViewProps {
+  idea: Idea;
+}
+
+function IdeaDetailsView({ idea }: IdeaDetailsViewProps) {
   const navigate = useNavigate();
-
   const [editingNote, setEditingNote] = useState<Note | null>(null);
-  const [localTitle, setLocalTitle] = useState("");
-  const [localDescription, setLocalDescription] = useState("");
+  const [localTitle, setLocalTitle] = useState(idea.title);
+  const [localDescription, setLocalDescription] = useState(idea.description);
   const [hasChanges, setHasChanges] = useState(false);
-
-  const { data: idea, isLoading: isLoadingIdea, error: ideaError } = useGetIdeaQuery(id || "", {
-    skip: !id,
-  });
+  const [viewMode, setViewMode] = useState<"LIST" | "GRAPH">("GRAPH");
+  const [isGraphFullscreen, setIsGraphFullscreen] = useState(false);
 
   const { data: notesData, isLoading: isLoadingNotes } = useGetNotesQuery(
-    id ? { ideaId: id } : undefined,
-    { skip: !id }
+    { ideaId: idea.id },
+    { skip: !idea.id }
   );
+
+  const { data: allVaultNotesData } = useGetNotesQuery({ limit: 200 });
 
   const [updateIdea, { isLoading: isUpdatingIdea }] = useUpdateIdeaMutation();
   const [deleteIdea, { isLoading: isDeletingIdea }] = useDeleteIdeaMutation();
   const [deleteNote] = useDeleteNoteMutation();
 
-  const notes = notesData?.data || [];
+  const notes = useMemo(() => notesData?.data || [], [notesData]);
+  const allVaultNotes = useMemo(() => allVaultNotesData?.data || [], [allVaultNotesData]);
 
-  useEffect(() => {
-    if (idea) {
-      setLocalTitle(idea.title);
-      setLocalDescription(idea.description);
-      setHasChanges(false);
-    }
-  }, [idea]);
-
-  if (isLoadingIdea) {
-    return (
-      <div className="text-center py-20 font-mono text-xs text-[#737373]">
-        Loading idea details from database...
-      </div>
-    );
-  }
-
-  if (ideaError || !idea) {
-    return (
-      <div className="text-center py-20">
-        <h2 className="text-lg font-semibold text-[#F5F5F5]">Idea Not Found</h2>
-        <p className="text-xs text-[#737373] mt-2">
-          The idea you are looking for does not exist or has been deleted.
-        </p>
-        <Link
-          to="/app/ideas"
-          className="mt-4 inline-flex items-center gap-1.5 text-xs text-neutral-400 hover:underline"
-        >
-          <ArrowLeft className="size-3.5" /> Back to Vault
-        </Link>
-      </div>
-    );
-  }
+  // Build local Obsidian-style Knowledge Graph
+  const graphData = useMemo(() => {
+    return buildLocalIdeaGraph(idea, notes, allVaultNotes);
+  }, [idea, notes, allVaultNotes]);
 
   const handleSaveTextChanges = async () => {
-    if (!id) return;
     try {
       await updateIdea({
-        id,
+        id: idea.id,
         title: localTitle.trim(),
         description: localDescription.trim(),
       }).unwrap();
       setHasChanges(false);
       toast.success("Idea details updated");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update idea");
     }
   };
 
   const handleStatusChange = async (newStatus: IdeaStatus) => {
-    if (!id) return;
     try {
       await updateIdea({
-        id,
+        id: idea.id,
         status: newStatus,
       }).unwrap();
       toast.success(`Lifecycle shifted to ${newStatus}`, {
         description: `"${idea.title}" is now marked as ${newStatus.toLowerCase()}.`,
       });
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status");
     }
   };
@@ -121,7 +98,7 @@ export default function IdeaDetails() {
         await deleteIdea(idea.id).unwrap();
         toast.success("Idea deleted");
         navigate("/app/ideas");
-      } catch (error) {
+      } catch {
         toast.error("Failed to delete idea");
       }
     }
@@ -131,12 +108,11 @@ export default function IdeaDetails() {
     try {
       await deleteNote(noteId).unwrap();
       toast.success("Note deleted");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete note");
     }
   };
 
-  // Activity logs based on idea and notes
   const activityLogs = [
     {
       action: `Status: ${idea.status}`,
@@ -176,7 +152,34 @@ export default function IdeaDetails() {
           <span>Back to Vault</span>
         </Link>
 
+        {/* View Mode Switcher + Actions */}
         <div className="flex items-center gap-2">
+          {/* List / Graph Mode Toggle */}
+          <div className="flex items-center bg-[#111111] border border-[#262626] p-0.5 rounded-none mr-2">
+            <button
+              onClick={() => setViewMode("GRAPH")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-none cursor-pointer transition-all ${
+                viewMode === "GRAPH"
+                  ? "bg-[#1C1C1C] border border-[#525252] text-accent-gold shadow-md"
+                  : "text-[#737373] hover:text-[#F5F5F5]"
+              }`}
+            >
+              <Network className="size-3.5" />
+              <span>Graph View</span>
+            </button>
+            <button
+              onClick={() => setViewMode("LIST")}
+              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-none cursor-pointer transition-all ${
+                viewMode === "LIST"
+                  ? "bg-[#1C1C1C] border border-[#525252] text-[#F5F5F5] shadow-md"
+                  : "text-[#737373] hover:text-[#F5F5F5]"
+              }`}
+            >
+              <LayoutGrid className="size-3.5" />
+              <span>Notes List</span>
+            </button>
+          </div>
+
           {hasChanges && (
             <Button
               onClick={handleSaveTextChanges}
@@ -212,7 +215,7 @@ export default function IdeaDetails() {
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Left Column: Idea Details & Attached Notes */}
+        {/* Left Column: Idea Details, Graph & Attached Notes */}
         <div className="lg:col-span-2 space-y-6">
           {/* Editable Title */}
           <div className="space-y-1">
@@ -246,67 +249,106 @@ export default function IdeaDetails() {
             />
           </div>
 
-          {/* Attached Research & Specifications Notes Segment */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileText className="size-4 text-accent-gold" />
-                <h2 className="text-sm font-semibold text-[#F5F5F5]">
-                  Attached Research & Notes
-                </h2>
-                <span className="px-2 py-0.2 rounded-none text-[10px] uppercase font-mono font-semibold bg-[#161616] text-[#A3A3A3] border border-[#262626]">
-                  {notes.length} Notes
-                </span>
+          {/* Obsidian Knowledge Graph View Mode */}
+          {viewMode === "GRAPH" ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Network className="size-4 text-accent-gold" />
+                  <h2 className="text-sm font-semibold text-[#F5F5F5]">
+                    Idea Synaptic Graph
+                  </h2>
+                  <span className="px-2 py-0.2 rounded-none text-[10px] uppercase font-mono font-semibold bg-[#161616] text-accent-gold border border-accent-gold/20">
+                    {graphData.nodes.length} Nodes • {graphData.links.length} Links
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-[#737373] font-mono hidden sm:inline">
+                    Use [[WikiLinks]] & #tags in notes to expand clusters
+                  </span>
+                </div>
               </div>
 
-              <CreateNoteDialog
-                defaultIdeaId={idea.id}
-                trigger={
-                  <Button className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] text-xs font-semibold rounded-none px-3 h-8 cursor-pointer flex items-center gap-1.5 shadow-sm">
-                    <Plus className="size-3.5" />
-                    <span>New Note</span>
-                  </Button>
-                }
-              />
+              <div
+                className={`${
+                  isGraphFullscreen
+                    ? "fixed inset-0 z-50 p-6 bg-[#030303]/95 backdrop-blur-xl"
+                    : "h-[450px] w-full"
+                }`}
+              >
+                <KnowledgeGraph
+                  data={graphData}
+                  height="100%"
+                  onSelectNote={(n) => setEditingNote(n)}
+                  isFullscreen={isGraphFullscreen}
+                  onToggleFullscreen={() => setIsGraphFullscreen(!isGraphFullscreen)}
+                />
+              </div>
             </div>
+          ) : (
+            /* Structured Notes List View */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="size-4 text-accent-gold" />
+                  <h2 className="text-sm font-semibold text-[#F5F5F5]">
+                    Attached Research & Notes
+                  </h2>
+                  <span className="px-2 py-0.2 rounded-none text-[10px] uppercase font-mono font-semibold bg-[#161616] text-[#A3A3A3] border border-[#262626]">
+                    {notes.length} Notes
+                  </span>
+                </div>
 
-            {isLoadingNotes ? (
-              <div className="py-8 text-center text-xs text-[#737373] font-mono">
-                Loading notes...
-              </div>
-            ) : notes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 border border-dashed border-[#262626] rounded-none bg-[#0A0A0A]/50 text-center p-6">
-                <FileText className="size-7 text-[#737373] mb-2" />
-                <h3 className="text-xs font-semibold text-[#F5F5F5]">
-                  No Notes Attached to this Idea
-                </h3>
-                <p className="text-xs text-[#737373] max-w-sm mt-1 mb-4 leading-relaxed">
-                  Attach research findings, system architecture specs, checklist items, or design inspirations.
-                </p>
                 <CreateNoteDialog
                   defaultIdeaId={idea.id}
                   trigger={
-                    <Button className="bg-[#161616] hover:bg-[#222222] border border-[#262626] text-[#F5F5F5] text-xs font-medium rounded-none px-3 h-8 cursor-pointer">
-                      <Plus className="size-3.5 mr-1 text-accent-gold" />
-                      <span>Capture First Note</span>
+                    <Button className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] text-xs font-semibold rounded-none px-3 h-8 cursor-pointer flex items-center gap-1.5 shadow-sm">
+                      <Plus className="size-3.5" />
+                      <span>New Note</span>
                     </Button>
                   }
                 />
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {notes.map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    idea={idea}
-                    onEdit={(n) => setEditingNote(n)}
-                    onDelete={handleDeleteNote}
+
+              {isLoadingNotes ? (
+                <div className="py-8 text-center text-xs text-[#737373] font-mono">
+                  Loading notes...
+                </div>
+              ) : notes.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 border border-dashed border-[#262626] rounded-none bg-[#0A0A0A]/50 text-center p-6">
+                  <FileText className="size-7 text-[#737373] mb-2" />
+                  <h3 className="text-xs font-semibold text-[#F5F5F5]">
+                    No Notes Attached to this Idea
+                  </h3>
+                  <p className="text-xs text-[#737373] max-w-sm mt-1 mb-4 leading-relaxed">
+                    Attach research findings, system architecture specs, checklist items, or design inspirations.
+                  </p>
+                  <CreateNoteDialog
+                    defaultIdeaId={idea.id}
+                    trigger={
+                      <Button className="bg-[#161616] hover:bg-[#222222] border border-[#262626] text-[#F5F5F5] text-xs font-medium rounded-none px-3 h-8 cursor-pointer">
+                        <Plus className="size-3.5 mr-1 text-accent-gold" />
+                        <span>Capture First Note</span>
+                      </Button>
+                    }
                   />
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {notes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      idea={idea}
+                      onEdit={(n) => setEditingNote(n)}
+                      onDelete={handleDeleteNote}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Column: Metadata & Lifecycles */}
@@ -368,6 +410,12 @@ export default function IdeaDetails() {
               </span>
             </div>
             <div className="flex justify-between items-center">
+              <span>Graph Density</span>
+              <span className="text-emerald-400 font-mono font-semibold">
+                {graphData.links.length} Edges
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
               <span>Idea ID</span>
               <span className="text-[#F5F5F5] font-mono truncate max-w-[140px]">{idea.id}</span>
             </div>
@@ -408,4 +456,39 @@ export default function IdeaDetails() {
       />
     </div>
   );
+}
+
+export default function IdeaDetails() {
+  const { id } = useParams<{ id: string }>();
+
+  const { data: idea, isLoading: isLoadingIdea, error: ideaError } = useGetIdeaQuery(id || "", {
+    skip: !id,
+  });
+
+  if (isLoadingIdea) {
+    return (
+      <div className="text-center py-20 font-mono text-xs text-[#737373]">
+        Loading idea details from database...
+      </div>
+    );
+  }
+
+  if (ideaError || !idea) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-lg font-semibold text-[#F5F5F5]">Idea Not Found</h2>
+        <p className="text-xs text-[#737373] mt-2">
+          The idea you are looking for does not exist or has been deleted.
+        </p>
+        <Link
+          to="/app/ideas"
+          className="mt-4 inline-flex items-center gap-1.5 text-xs text-neutral-400 hover:underline"
+        >
+          <ArrowLeft className="size-3.5" /> Back to Vault
+        </Link>
+      </div>
+    );
+  }
+
+  return <IdeaDetailsView key={idea.id + idea.updatedAt} idea={idea} />;
 }

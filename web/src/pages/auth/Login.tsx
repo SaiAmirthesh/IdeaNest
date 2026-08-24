@@ -81,7 +81,7 @@ export default function Login() {
         }
 
         toast.success("Account created successfully!");
-        window.location.href = "/app";
+        navigate("/app");
       } else {
         const res = await authClient.signIn.email({
           email: values.email,
@@ -94,9 +94,9 @@ export default function Login() {
         }
 
         toast.success("Welcome back!");
-        window.location.href = "/app";
+        navigate("/app");
       }
-    } catch (error) {
+    } catch {
       toast.error("An unexpected error occurred. Please try again.");
     }
   };
@@ -107,7 +107,7 @@ export default function Login() {
         provider: "google",
         callbackURL: window.location.origin + "/app",
       });
-    } catch (error) {
+    } catch {
       toast.error("Failed to connect with Google OAuth.");
     }
   };

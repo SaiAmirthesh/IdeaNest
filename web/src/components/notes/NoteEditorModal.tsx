@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { FileText, Save, Trash2 } from "lucide-react";
 import type { Note } from "@/features/notes/types";
@@ -14,31 +14,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-interface NoteEditorModalProps {
-  note: Note | null;
-  open: boolean;
+interface NoteEditorFormProps {
+  note: Note;
   onClose: () => void;
 }
 
-export function NoteEditorModal({ note, open, onClose }: NoteEditorModalProps) {
+function NoteEditorForm({ note, onClose }: NoteEditorFormProps) {
   const [updateNote, { isLoading: isUpdating }] = useUpdateNoteMutation();
   const [deleteNote, { isLoading: isDeleting }] = useDeleteNoteMutation();
   const { data: ideasData } = useGetIdeasQuery({ limit: 100 });
   const ideas = ideasData?.data || [];
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [ideaId, setIdeaId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (note) {
-      setTitle(note.title);
-      setContent(note.content);
-      setIdeaId(note.ideaId ?? null);
-    }
-  }, [note]);
-
-  if (!note) return null;
+  const [title, setTitle] = useState(note.title);
+  const [content, setContent] = useState(note.content);
+  const [ideaId, setIdeaId] = useState<string | null>(note.ideaId ?? null);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +49,7 @@ export function NoteEditorModal({ note, open, onClose }: NoteEditorModalProps) {
       }).unwrap();
       toast.success("Note saved successfully");
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to save note. Please check connection.");
     }
   };
@@ -71,11 +60,105 @@ export function NoteEditorModal({ note, open, onClose }: NoteEditorModalProps) {
         await deleteNote(note.id).unwrap();
         toast.success("Note deleted");
         onClose();
-      } catch (error) {
+      } catch {
         toast.error("Failed to delete note.");
       }
     }
   };
+
+  return (
+    <form onSubmit={handleSave} className="space-y-4 mt-1">
+      {/* Note Title */}
+      <div className="space-y-1">
+        <label className="text-xs font-medium text-[#737373] block">Note Title</label>
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#525252] focus-visible:border-neutral-500 rounded-none text-sm font-semibold h-10"
+          placeholder="Note title..."
+        />
+      </div>
+
+      {/* Associated Idea Selector */}
+      <div className="space-y-1">
+        <label className="text-xs font-medium text-[#737373] block">Linked Idea</label>
+        <select
+          value={ideaId || "NONE"}
+          onChange={(e) => setIdeaId(e.target.value === "NONE" ? null : e.target.value)}
+          className="w-full bg-[#111111] border border-[#262626] text-[#F5F5F5] rounded-none text-xs h-9 px-3 focus:outline-none focus:border-neutral-500 font-sans"
+        >
+          <option value="NONE" className="bg-[#111111] text-[#737373]">
+            -- Standalone Note (No Idea Linked) --
+          </option>
+          {ideas.map((i) => (
+            <option key={i.id} value={i.id} className="bg-[#111111] text-[#F5F5F5]">
+              {i.title} ({i.status})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Note Content Editor */}
+      <div className="space-y-1">
+        <label className="text-xs font-medium text-[#737373] flex items-center justify-between">
+          <span>Content & Markdown</span>
+          <span className="text-[10px] text-neutral-500 font-mono">
+            Updated {new Date(note.updatedAt).toLocaleTimeString()}
+          </span>
+        </label>
+        <Textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#525252] focus-visible:border-neutral-500 rounded-none text-xs min-h-[220px] font-sans leading-relaxed resize-y"
+          placeholder="Note content..."
+        />
+      </div>
+
+      {/* Bottom Actions */}
+      <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#262626]">
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          disabled={isDeleting}
+          onClick={handleDelete}
+          className="rounded-none text-xs h-9 px-3 cursor-pointer gap-1.5"
+        >
+          <Trash2 className="size-3.5" />
+          <span>{isDeleting ? "Deleting..." : "Delete"}</span>
+        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="bg-transparent border-[#262626] hover:bg-[#111111] text-[#A3A3A3] hover:text-[#F5F5F5] rounded-none text-xs h-9 px-4 cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isUpdating}
+            className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold rounded-none text-xs h-9 px-5 cursor-pointer shadow-md shadow-white/5 gap-1.5"
+          >
+            <Save className="size-3.5" />
+            <span>{isUpdating ? "Saving..." : "Save Changes"}</span>
+          </Button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+interface NoteEditorModalProps {
+  note: Note | null;
+  open: boolean;
+  onClose: () => void;
+}
+
+export function NoteEditorModal({ note, open, onClose }: NoteEditorModalProps) {
+  if (!note) return null;
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -94,87 +177,7 @@ export function NoteEditorModal({ note, open, onClose }: NoteEditorModalProps) {
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSave} className="space-y-4 mt-1">
-          {/* Note Title */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-[#737373] block">Note Title</label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#525252] focus-visible:border-neutral-500 rounded-none text-sm font-semibold h-10"
-              placeholder="Note title..."
-            />
-          </div>
-
-          {/* Associated Idea Selector */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-[#737373] block">Linked Idea</label>
-            <select
-              value={ideaId || "NONE"}
-              onChange={(e) => setIdeaId(e.target.value === "NONE" ? null : e.target.value)}
-              className="w-full bg-[#111111] border border-[#262626] text-[#F5F5F5] rounded-none text-xs h-9 px-3 focus:outline-none focus:border-neutral-500 font-sans"
-            >
-              <option value="NONE" className="bg-[#111111] text-[#737373]">
-                -- Standalone Note (No Idea Linked) --
-              </option>
-              {ideas.map((i) => (
-                <option key={i.id} value={i.id} className="bg-[#111111] text-[#F5F5F5]">
-                  {i.title} ({i.status})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Note Content Editor */}
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-[#737373] flex items-center justify-between">
-              <span>Content & Markdown</span>
-              <span className="text-[10px] text-neutral-500 font-mono">
-                Updated {new Date(note.updatedAt).toLocaleTimeString()}
-              </span>
-            </label>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#525252] focus-visible:border-neutral-500 rounded-none text-xs min-h-[220px] font-sans leading-relaxed resize-y"
-              placeholder="Note content..."
-            />
-          </div>
-
-          {/* Bottom Actions */}
-          <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#262626]">
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              disabled={isDeleting}
-              onClick={handleDelete}
-              className="rounded-none text-xs h-9 px-3 cursor-pointer gap-1.5"
-            >
-              <Trash2 className="size-3.5" />
-              <span>{isDeleting ? "Deleting..." : "Delete"}</span>
-            </Button>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="bg-transparent border-[#262626] hover:bg-[#111111] text-[#A3A3A3] hover:text-[#F5F5F5] rounded-none text-xs h-9 px-4 cursor-pointer"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isUpdating}
-                className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold rounded-none text-xs h-9 px-5 cursor-pointer shadow-md shadow-white/5 gap-1.5"
-              >
-                <Save className="size-3.5" />
-                <span>{isUpdating ? "Saving..." : "Save Changes"}</span>
-              </Button>
-            </div>
-          </div>
-        </form>
+        <NoteEditorForm key={note.id + note.updatedAt} note={note} onClose={onClose} />
       </DialogContent>
     </Dialog>
   );
