@@ -26,7 +26,7 @@ export interface UpdateIdeaDto {
   status?: IdeaStatus;
 }
 
-const baseUrl = '/api';
+const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const ideaApi = createApi({
   reducerPath: 'ideaApi',

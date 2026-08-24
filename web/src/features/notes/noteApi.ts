@@ -9,7 +9,7 @@ export interface PaginatedNotesResponse {
   totalPages: number;
 }
 
-const baseUrl = '/api';
+const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const noteApi = createApi({
   reducerPath: 'noteApi',
