@@ -1,0 +1,9 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://ideanest-gamma.vercel.app/api/:path*"
+    }
+  ]
+}
