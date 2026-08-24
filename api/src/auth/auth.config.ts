@@ -12,7 +12,7 @@ import type { BetterAuthOptions } from 'better-auth';
  * `auth.ts`, not here.
  */
 export const authConfig: BetterAuthOptions = {
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: process.env.BETTER_AUTH_URL || 'https://ideanest-gamma.vercel.app',
   secret: process.env.BETTER_AUTH_SECRET,
 
   emailAndPassword: {
@@ -30,8 +30,11 @@ export const authConfig: BetterAuthOptions = {
 
   // CSRF / origin whitelist for the dev server and any deployed frontend.
   trustedOrigins: [
-    process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
-    'http://localhost:5173', // typical Vite dev server
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://idea-nest-eight.vercel.app',
+    'https://ideanest-gamma.vercel.app',
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
     ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
   ],
 

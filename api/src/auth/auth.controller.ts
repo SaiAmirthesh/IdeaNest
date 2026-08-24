@@ -12,10 +12,12 @@ import { auth } from './auth';
  */
 @Controller('api/auth')
 export class AuthController {
-  @All('*')
+  @All('*path')
   async handle(@Req() req: Request, @Res() res: Response): Promise<void> {
-    // Reconstruct a WHATWG Request that Express can hand off to Better Auth.
-    const url = `${req.protocol}://${req.get('host') ?? 'localhost'}${req.originalUrl}`;
+    // Respect reverse proxy headers (e.g. Vercel, Cloudflare, load balancers)
+    const protocol = req.get('x-forwarded-proto') ?? req.protocol ?? 'https';
+    const host = req.get('x-forwarded-host') ?? req.get('host') ?? 'localhost';
+    const url = `${protocol}://${host}${req.originalUrl}`;
 
     const headers = new Headers();
     for (const [key, value] of Object.entries(req.headers)) {
@@ -28,8 +30,9 @@ export class AuthController {
     }
 
     const init: RequestInit = { method: req.method, headers };
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-      init.body = req.body ? JSON.stringify(req.body) : undefined;
+    if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
+      init.body =
+        typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
     }
 
     const webRequest = new Request(url, init);
@@ -54,9 +57,7 @@ export class AuthController {
     }
 
     const body = await webResponse.text();
-    // Forward the original body verbatim (including error details) so the
-    // caller can see what actually went wrong. Nest will only log a phantom
-    // "Auth handler error" if the response is *empty* and the status is 5xx.
+    // Forward the original body verbatim (including error details)
     if (body) {
       res.send(body);
       return;
