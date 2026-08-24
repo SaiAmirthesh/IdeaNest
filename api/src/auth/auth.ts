@@ -1,8 +1,8 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 
-import { db, schema } from "../db";
-import { authConfig } from "./auth.config";
+import { db, schema } from '../db';
+import { authConfig } from './auth.config';
 
 /**
  * Better Auth server instance.
@@ -14,7 +14,7 @@ import { authConfig } from "./auth.config";
 export const auth = betterAuth({
   ...authConfig,
   database: drizzleAdapter(db, {
-    provider: "pg",
+    provider: 'pg',
     schema,
   }),
 });

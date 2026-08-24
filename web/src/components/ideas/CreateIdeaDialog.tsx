@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useDispatch } from "react-redux";
 import { toast } from "sonner";
-import { addIdea } from "@/features/ideas/ideaSlice";
+import { useCreateIdeaMutation } from "@/features/ideas/ideaApi";
+import { useCreateNoteMutation } from "@/features/notes/noteApi";
+import type { IdeaStatus } from "@/features/ideas/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +34,8 @@ interface CreateIdeaDialogProps {
 
 export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
   const [open, setOpen] = useState(false);
-  const dispatch = useDispatch();
+  const [createIdea, { isLoading: isCreatingIdea }] = useCreateIdeaMutation();
+  const [createNote] = useCreateNoteMutation();
 
   const {
     register,
@@ -41,7 +43,7 @@ export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
     reset,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<IdeaFormValues>({
     resolver: zodResolver(ideaSchema),
     defaultValues: {
@@ -56,14 +58,27 @@ export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
 
   const onSubmit = async (values: IdeaFormValues) => {
     try {
-      dispatch(addIdea(values));
+      const createdIdea = await createIdea({
+        title: values.title.trim(),
+        description: values.description.trim(),
+        status: values.status as IdeaStatus,
+      }).unwrap();
+
+      if (values.notes?.trim() && createdIdea.id) {
+        await createNote({
+          title: `Initial Notes: ${values.title.trim()}`,
+          content: values.notes.trim(),
+          ideaId: createdIdea.id,
+        }).unwrap();
+      }
+
       toast.success("Idea captured successfully!", {
         description: `"${values.title}" has been saved to your second brain.`,
       });
       setOpen(false);
       reset();
     } catch (error) {
-      toast.error("Failed to save idea. Please try again.");
+      toast.error("Failed to save idea. Please check your connection.");
     }
   };
 
@@ -84,7 +99,7 @@ export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
             <label className="text-xs font-medium text-[#737373]">Title</label>
             <Input
               placeholder="e.g. Multi-agent review system..."
-              className="bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#737373] focus-visible:border-neutral-500"
+              className="bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#737373] focus-visible:border-neutral-500 rounded-none text-xs h-9"
               {...register("title")}
             />
             {errors.title && <span className="text-xs text-red-400 font-medium">{errors.title.message}</span>}
@@ -95,7 +110,7 @@ export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
             <label className="text-xs font-medium text-[#737373]">Description</label>
             <Textarea
               placeholder="Provide a brief summary of the core concept..."
-              className="min-h-[80px] bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#737373] focus-visible:border-neutral-500 resize-none"
+              className="min-h-[80px] bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#737373] focus-visible:border-neutral-500 resize-none rounded-none text-xs font-sans"
               {...register("description")}
             />
             {errors.description && <span className="text-xs text-red-400 font-medium">{errors.description.message}</span>}
@@ -110,7 +125,7 @@ export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
                   key={s}
                   type="button"
                   onClick={() => setValue("status", s)}
-                  className={`py-2 px-3 text-xs font-semibold rounded-none border transition-all duration-200 ${
+                  className={`py-2 px-3 text-xs font-semibold rounded-none border transition-all duration-200 cursor-pointer ${
                     selectedStatus === s
                       ? "bg-[#1C1C1C] border-[#525252] text-[#F5F5F5] shadow-md shadow-white/5"
                       : "bg-[#111111] border-[#262626] text-[#737373] hover:border-[#525252] hover:text-[#F5F5F5]"
@@ -127,7 +142,7 @@ export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
             <label className="text-xs font-medium text-[#737373]">Initial Notes (Optional)</label>
             <Textarea
               placeholder="Jot down any preliminary thoughts, resources, or reminders..."
-              className="min-h-[80px] bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#737373] focus-visible:border-neutral-500 resize-none"
+              className="min-h-[80px] bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#737373] focus-visible:border-neutral-500 resize-none rounded-none text-xs font-sans"
               {...register("notes")}
             />
           </div>
@@ -137,16 +152,16 @@ export function CreateIdeaDialog({ trigger }: CreateIdeaDialogProps) {
               type="button"
               variant="ghost"
               onClick={() => setOpen(false)}
-              className="text-[#737373] hover:text-[#F5F5F5] hover:bg-[#111111] text-xs cursor-pointer"
+              className="text-[#737373] hover:text-[#F5F5F5] hover:bg-[#111111] text-xs cursor-pointer rounded-none"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting}
-              className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold text-xs px-4 cursor-pointer shadow-md shadow-white/5"
+              disabled={isCreatingIdea}
+              className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] font-semibold text-xs px-4 cursor-pointer shadow-md shadow-white/5 rounded-none"
             >
-              {isSubmitting ? "Saving..." : "Save to Brain"}
+              {isCreatingIdea ? "Saving..." : "Save to Brain"}
             </Button>
           </DialogFooter>
         </form>

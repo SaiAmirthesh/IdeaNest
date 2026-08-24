@@ -9,6 +9,7 @@ import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import Ideas from "@/pages/dashboard/Ideas";
 import IdeaDetails from "@/pages/dashboard/IdeaDetails";
+import Notes from "@/pages/dashboard/Notes";
 import Settings from "@/pages/dashboard/Settings";
 
 export const router = createBrowserRouter([
@@ -39,6 +40,10 @@ export const router = createBrowserRouter([
           {
             path: "ideas/:id",
             element: <IdeaDetails />,
+          },
+          {
+            path: "notes",
+            element: <Notes />,
           },
           {
             path: "settings",

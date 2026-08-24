@@ -1,7 +1,6 @@
-import { useSelector, useDispatch } from "react-redux";
-import { Search, Plus } from "lucide-react";
-import type { RootState } from "@/app/store";
-import { setSearchTerm, setStatusFilter } from "@/features/ideas/ideaSlice";
+import { useState } from "react";
+import { Search, Plus, Lightbulb } from "lucide-react";
+import { useGetIdeasQuery } from "@/features/ideas/ideaApi";
 import type { IdeaStatus } from "@/features/ideas/types";
 import { IdeaGrid } from "@/components/ideas/IdeaGrid";
 import { CreateIdeaDialog } from "@/components/ideas/CreateIdeaDialog";
@@ -9,8 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function Ideas() {
-  const dispatch = useDispatch();
-  const { ideas, searchTerm, statusFilter } = useSelector((state: RootState) => state.ideas);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<IdeaStatus | "ALL">("ALL");
+
+  const { data: ideasData, isLoading } = useGetIdeasQuery({ limit: 100 });
+  const ideas = ideasData?.data || [];
 
   // Parse filters
   const filteredIdeas = ideas.filter((idea) => {
@@ -60,9 +62,9 @@ export default function Ideas() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#737373]" />
           <Input
             value={searchTerm}
-            onChange={(e) => dispatch(setSearchTerm(e.target.value))}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by title or description..."
-            className="pl-9 bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#737373]/80 focus-visible:border-neutral-500"
+            className="pl-9 bg-[#111111] border-[#262626] text-[#F5F5F5] placeholder-[#737373]/80 focus-visible:border-neutral-500 rounded-none text-xs"
           />
         </div>
 
@@ -76,7 +78,7 @@ export default function Ideas() {
             return (
               <button
                 key={status}
-                onClick={() => dispatch(setStatusFilter(status))}
+                onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1.5 rounded-none text-xs font-medium border font-mono transition-all uppercase whitespace-nowrap cursor-pointer ${
                   isActive
                     ? "bg-[#1C1C1C] border-[#525252] text-[#F5F5F5] shadow-md shadow-white/5"
@@ -84,9 +86,11 @@ export default function Ideas() {
                 }`}
               >
                 <span>{status === "ALL" ? "ALL" : status}</span>
-                <span className={`ml-1.5 px-1 py-0.2 rounded-none text-[10px] ${
-                  isActive ? "bg-[#262626] text-[#F5F5F5]" : "bg-[#262626]/40 text-[#737373]"
-                }`}>
+                <span
+                  className={`ml-1.5 px-1 py-0.2 rounded-none text-[10px] ${
+                    isActive ? "bg-[#262626] text-[#F5F5F5]" : "bg-[#262626]/40 text-[#737373]"
+                  }`}
+                >
                   {count}
                 </span>
               </button>
@@ -96,9 +100,33 @@ export default function Ideas() {
       </div>
 
       {/* Grid listing */}
-      <div className="pt-2">
-        <IdeaGrid ideas={filteredIdeas} />
-      </div>
+      {isLoading ? (
+        <div className="py-16 text-center text-xs text-[#737373] font-mono">
+          Loading ideas from database...
+        </div>
+      ) : filteredIdeas.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 border border-dashed border-[#262626] rounded-none bg-[#111111]/10 text-center p-6">
+          <Lightbulb className="size-8 text-[#737373] mb-3" />
+          <h3 className="text-sm font-semibold text-[#F5F5F5]">No Ideas in this View</h3>
+          <p className="text-xs text-[#737373] max-w-sm mt-1 mb-4 leading-relaxed">
+            {searchTerm
+              ? `No ideas matching "${searchTerm}". Try adjusting your search keyword.`
+              : "Capture thoughts, startup ideas, or research concepts into your permanent library."}
+          </p>
+          <CreateIdeaDialog
+            trigger={
+              <Button className="bg-[#F5F5F5] hover:bg-[#EAEAEA] text-[#030303] text-xs font-semibold rounded-none px-4 h-8 cursor-pointer">
+                <Plus className="size-3.5 mr-1" />
+                <span>Capture New Idea</span>
+              </Button>
+            }
+          />
+        </div>
+      ) : (
+        <div className="pt-2">
+          <IdeaGrid ideas={filteredIdeas} />
+        </div>
+      )}
     </div>
   );
 }

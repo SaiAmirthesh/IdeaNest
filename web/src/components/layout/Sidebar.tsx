@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { LayoutDashboard, Lightbulb, Settings, User, LogOut } from "lucide-react";
+import { LayoutDashboard, Lightbulb, FileText, Settings, User, LogOut } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/app/store";
 import { logout } from "@/features/auth/authSlice";
@@ -20,6 +20,7 @@ export default function Sidebar() {
   const navItems = [
     { name: "Overview", path: "/app", icon: LayoutDashboard },
     { name: "Ideas", path: "/app/ideas", icon: Lightbulb },
+    { name: "Notes", path: "/app/notes", icon: FileText },
     { name: "Settings", path: "/app/settings", icon: Settings },
   ];
 

@@ -1,22 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type { Idea, IdeaStatus } from './types';
 
-export interface Idea {
-  id: string;
-  title: string;
-  description: string;
-  status:
-    | "SEED"
-    | "THINKING"
-    | "BUILDING"
-    | "DORMANT"
-    | "COMPLETED"
-    | "ARCHIVED";
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
+export interface PaginatedIdeasResponse {
+  data: Idea[];
   page: number;
   limit: number;
   total: number;
@@ -31,15 +17,15 @@ export interface GetIdeasParams {
 export interface CreateIdeaDto {
   title: string;
   description: string;
+  status?: IdeaStatus;
 }
 
 export interface UpdateIdeaDto {
   title?: string;
   description?: string;
-  status?: Idea["status"];
+  status?: IdeaStatus;
 }
 
-// TODO: Replace with your actual backend URL when integrating
 const baseUrl = '/api';
 
 export const ideaApi = createApi({
@@ -47,20 +33,72 @@ export const ideaApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: (headers) => {
-      // Better Auth credentials are cookie-based, but headers can be appended here if needed
       return headers;
     },
   }),
   tagTypes: ['Idea'],
-  endpoints: () => ({
-    // TODO: Implement endpoints:
-    // - getIdeas (Query)
-    // - getIdea (Query)
-    // - createIdea (Mutation)
-    // - updateIdea (Mutation)
-    // - deleteIdea (Mutation)
+  endpoints: (builder) => ({
+    getIdeas: builder.query<PaginatedIdeasResponse, GetIdeasParams | void>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params && typeof params === 'object') {
+          if (params.page !== undefined) queryParams.set('page', String(params.page));
+          if (params.limit !== undefined) queryParams.set('limit', String(params.limit));
+        }
+        const qs = queryParams.toString();
+        return qs ? `/ideas?${qs}` : '/ideas';
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: 'Idea' as const, id })),
+              { type: 'Idea', id: 'LIST' },
+            ]
+          : [{ type: 'Idea', id: 'LIST' }],
+    }),
+
+    getIdea: builder.query<Idea, string>({
+      query: (id) => `/ideas/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'Idea', id }],
+    }),
+
+    createIdea: builder.mutation<Idea, CreateIdeaDto>({
+      query: (body) => ({
+        url: '/ideas',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [{ type: 'Idea', id: 'LIST' }],
+    }),
+
+    updateIdea: builder.mutation<Idea, { id: string } & UpdateIdeaDto>({
+      query: ({ id, ...body }) => ({
+        url: `/ideas/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Idea', id },
+        { type: 'Idea', id: 'LIST' },
+      ],
+    }),
+
+    deleteIdea: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/ideas/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Idea', id: 'LIST' }],
+    }),
   }),
 });
 
-export const {} = ideaApi; // Add exported hooks here once endpoints are defined
+export const {
+  useGetIdeasQuery,
+  useGetIdeaQuery,
+  useCreateIdeaMutation,
+  useUpdateIdeaMutation,
+  useDeleteIdeaMutation,
+} = ideaApi;
+
 export default ideaApi;

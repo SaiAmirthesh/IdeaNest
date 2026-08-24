@@ -3,11 +3,11 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from "@nestjs/common";
-import type { Request } from "express";
+} from '@nestjs/common';
+import type { Request } from 'express';
 
-import { auth } from "./auth";
-import type { Session, User } from "./auth.types";
+import { auth } from './auth';
+import type { Session, User } from './auth.types';
 
 /**
  * Express request augmented with the optional session/user that
@@ -42,13 +42,16 @@ export class AuthGuard implements CanActivate {
 
     const optional = this.isOptional(context);
     if (!session && !optional) {
-      throw new UnauthorizedException("No active session");
+      throw new UnauthorizedException('No active session');
     }
 
     return true;
   }
 
   private isOptional(context: ExecutionContext): boolean {
-    return Boolean(context.getHandler().name && Reflect.getMetadata("auth:optional", context.getHandler()));
+    return Boolean(
+      context.getHandler().name &&
+      Reflect.getMetadata('auth:optional', context.getHandler()),
+    );
   }
 }

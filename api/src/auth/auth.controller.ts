@@ -1,13 +1,7 @@
-import {
-  All,
-  Controller,
-  Req,
-  Res,
-  HttpException,
-} from "@nestjs/common";
-import type { Request, Response } from "express";
+import { All, Controller, Req, Res, HttpException } from '@nestjs/common';
+import type { Request, Response } from 'express';
 
-import { auth } from "./auth";
+import { auth } from './auth';
 
 /**
  * Mounts Better Auth's request handler at `/api/auth/*`.
@@ -16,12 +10,12 @@ import { auth } from "./auth";
  * session, callback URLs for OAuth providers, etc.). We forward *every* HTTP
  * method to the framework-agnostic `auth.handler` so it can route internally.
  */
-@Controller("api/auth")
+@Controller('api/auth')
 export class AuthController {
-  @All("*")
+  @All('*')
   async handle(@Req() req: Request, @Res() res: Response): Promise<void> {
     // Reconstruct a WHATWG Request that Express can hand off to Better Auth.
-    const url = `${req.protocol}://${req.get("host") ?? "localhost"}${req.originalUrl}`;
+    const url = `${req.protocol}://${req.get('host') ?? 'localhost'}${req.originalUrl}`;
 
     const headers = new Headers();
     for (const [key, value] of Object.entries(req.headers)) {
@@ -34,7 +28,7 @@ export class AuthController {
     }
 
     const init: RequestInit = { method: req.method, headers };
-    if (req.method !== "GET" && req.method !== "HEAD") {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
       init.body = req.body ? JSON.stringify(req.body) : undefined;
     }
 
@@ -43,19 +37,19 @@ export class AuthController {
 
     res.status(webResponse.status);
     webResponse.headers.forEach((value, key) => {
-      if (key.toLowerCase() === "set-cookie") return;
+      if (key.toLowerCase() === 'set-cookie') return;
       res.setHeader(key, value);
     });
 
-    if (typeof webResponse.headers.getSetCookie === "function") {
+    if (typeof webResponse.headers.getSetCookie === 'function') {
       const cookies = webResponse.headers.getSetCookie();
       if (cookies.length > 0) {
-        res.setHeader("set-cookie", cookies);
+        res.setHeader('set-cookie', cookies);
       }
     } else {
-      const cookie = webResponse.headers.get("set-cookie");
+      const cookie = webResponse.headers.get('set-cookie');
       if (cookie) {
-        res.setHeader("set-cookie", cookie);
+        res.setHeader('set-cookie', cookie);
       }
     }
 
@@ -68,9 +62,8 @@ export class AuthController {
       return;
     }
     if (webResponse.status >= 500) {
-      throw new HttpException("Auth handler error", webResponse.status);
+      throw new HttpException('Auth handler error', webResponse.status);
     }
     res.end();
   }
 }
-

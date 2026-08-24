@@ -1,4 +1,4 @@
-import type { BetterAuthOptions } from "better-auth";
+import type { BetterAuthOptions } from 'better-auth';
 
 /**
  * Framework-agnostic Better Auth configuration.
@@ -30,26 +30,26 @@ export const authConfig: BetterAuthOptions = {
 
   // CSRF / origin whitelist for the dev server and any deployed frontend.
   trustedOrigins: [
-    process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-    "http://localhost:5173", // typical Vite dev server
+    process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
+    'http://localhost:5173', // typical Vite dev server
   ],
 
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24,     // refresh once per day
+    updateAge: 60 * 60 * 24, // refresh once per day
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5,            // 5 minutes
+      maxAge: 60 * 5, // 5 minutes
     },
   },
 
   advanced: {
-    useSecureCookies: process.env.NODE_ENV === "production",
+    useSecureCookies: process.env.NODE_ENV === 'production',
   },
 
   rateLimit: {
     enabled: true,
-    window: 60,        // seconds
-    max: 100,          // requests per window per IP
+    window: 60, // seconds
+    max: 100, // requests per window per IP
   },
 };

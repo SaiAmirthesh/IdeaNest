@@ -1,24 +1,35 @@
-import { IsString, IsNumber, IsBoolean, IsArray, IsOptional, ValidateNested, IsObject, IsEnum, IsDate, IsUUID, IsEmail, IsUrl, IsNotEmpty, Length, Min, Max } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, Length, IsEnum } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IdeaStatus } from '../model/idea-status.model';
 
 export class UpdateIdeaDto {
-    @IsNotEmpty()
-    @IsString()
-    @Length(1, 100)
-    @ApiProperty({ example: "Idea Storage", description: 'Title of the entity' })
-    readonly title!: string;
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  @ApiPropertyOptional({
+    example: 'Idea Storage',
+    description: 'Title of the entity',
+  })
+  readonly title?: string;
 
-    @IsNotEmpty()
-    @IsString()
-    @Length(1, 100)
-    @ApiProperty({ example: "A Idea storing workspace with spontaneous notes", description: 'Detailed description' })
-    readonly description!: string;
+  @IsOptional()
+  @IsString()
+  @Length(1, 500)
+  @ApiPropertyOptional({
+    example: 'A workspace to store and refine thoughts',
+    description: 'Detailed description',
+  })
+  readonly description?: string;
 
-    @ApiProperty({ enum: IdeaStatus, example: IdeaStatus.THINKING, description: "Current status of the idea", })
-    @IsEnum(IdeaStatus, {
-        message: "Status must be one of SEED,THINKING, BUILDING, DORMANT, COMPLETED,ARCHIEVED",
-    })
-    readonly status!: IdeaStatus;
+  @ApiPropertyOptional({
+    enum: IdeaStatus,
+    example: IdeaStatus.THINKING,
+    description: 'Current status of the idea',
+  })
+  @IsOptional()
+  @IsEnum(IdeaStatus, {
+    message:
+      'Status must be one of SEED, THINKING, BUILDING, DORMANT, COMPLETED, ARCHEIVED',
+  })
+  readonly status?: IdeaStatus;
 }

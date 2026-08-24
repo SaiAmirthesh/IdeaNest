@@ -1,4 +1,4 @@
-import type { auth } from "./auth";
+import type { auth } from './auth';
 
 /**
  * Inferred Better Auth types.
